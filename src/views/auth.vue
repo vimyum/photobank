@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import firebase from 'firebase';
+import 'firebase/auth';
   export default {
     name: 'login-view',
     components: {
@@ -12,7 +14,6 @@
       console.log('AuthView is mounted.');
       console.log('query is %o', this.$route.query);
       const q = this.$route.query;
-      return;
 
       if(q.mode == 'resetPassword') {
         firebase.auth().verifyPasswordResetCode(q.oobCode).then(function(email) {
@@ -26,13 +27,18 @@
         })
       }
 
-      if(q.mode == 'devlogin') {
-        firebase.auth().createUserWithEmailAndPassword('xxx', 'xxx').then(result => {
+      if(q.mode == 'dlogin') { // only for local development.
+      const user = firebase.auth().currentUser;
+      console.log('current user: %o', user);
+      if (!user) {
+        firebase.auth().signInWithEmailAndPassword(q.mail, q.pass).then(result => {
             console.log('ログインしました')
           }).catch(function(error) {
           console.error(`failed to logn: ${error.code}, ${error.message}`);
         });
       }
+    }
+
     }
   };
 </script>
