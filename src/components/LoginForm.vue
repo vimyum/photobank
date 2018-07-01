@@ -1,9 +1,18 @@
 <template>
 <div class="container">
     <form ref="form" :model="form" label-width="240px">
-          <input v-model="form.email" />
+    <p class="control has-icons-left has-icons-right">
+    <input v-model="form.email" class="input" type="email" placeholder="Email">
+    <span class="icon is-small is-left">
+      <i class="mdi mdi-email-outline"></i>
+    </span>
+    <span class="icon is-small is-right">
+      <i class="fas fa-check"></i>
+    </span>
+  </p>
       </form>
-      <button v-bind:disabled="isValidMailAddr" v-on:click="onClick">ログインメールを送る</button>
+      <button class="button is-link is-outlined is-rounded" 
+        v-bind:disabled="isValidMailAddr" v-on:click="onClick">ログインメールを送る</button>
   </div>
 </template>
 

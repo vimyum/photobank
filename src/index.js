@@ -8,6 +8,10 @@ import NotFound from './views/notFound.vue';
 import * as firebase from 'firebase/app';
 import config from '../firebase.secret';
 
+import Buefy from 'buefy'
+import 'buefy/lib/buefy.css'
+Vue.use(Buefy)
+
 firebase.initializeApp(config);
 
 Vue.use(VueRouter)
