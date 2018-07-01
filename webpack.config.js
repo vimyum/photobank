@@ -1,5 +1,6 @@
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   //mode: 'development',
@@ -24,7 +25,7 @@ module.exports = {
         options: {
           presets: [
             ['env', {'modules': false}]
-          ]
+          ],
         },
         exclude: /node_modules/
       },
@@ -46,11 +47,16 @@ module.exports = {
         new CopyWebpackPlugin([
             { from: './src/html/*.html', to: './[name].[ext]' },
         ]),
+        new BundleAnalyzerPlugin(),
     ],
     resolve: {
         alias: {
-            'vue$': 'vue/dist/vue.esm.js'
+            'vue$': 'vue/dist/vue.runtime.esm.js'
         },
         extensions: ['*', '.js', '.vue', '.json']
+    },
+    devServer: {
+        port: 3000,
+        historyApiFallback: true,
     }
 };
