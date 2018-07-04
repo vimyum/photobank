@@ -68,7 +68,13 @@ exports.generateThumbnail = functions.storage.object().onFinalize((object) => {
       fs.unlinkSync(tempFilePath);
       const thumbFileName = `thumb_${fileName}`;
       const thumbFilePath = path.join(path.dirname(filePath), thumbFileName);
-      admin.database().ref('/images').set({path: filePath, thumbPath: thumbFilePath}).then((snapshot) => {
+      const baseName = fileName.replace(/\..+$/, '');
+      admin.database().ref(`/images/${baseName}`).set({
+          path: filePath,
+          thumbPath: thumbFilePath,
+          star: 0,
+          download: 0
+      }).then((snapshot) => {
           return res.redirect(303, snapshot.ref.toString());
       });
   });
