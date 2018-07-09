@@ -19,6 +19,9 @@
        </template>
        </div>
        <a id="download-button" class="button is-primary is-rounded">ダウンロード</a>
+    <div id="loading-background" v-bind:class="{
+      'display-none': !this.loading,
+    }"><div class="loader">Loadking...</div></div>
     </div>
 </template>
 
@@ -31,7 +34,7 @@ import 'firebase/auth';
     data: function () { return {
       title: 'hello',
       images: [],
-      stared: [],
+      loading: false,
     };
     },
     computed: {
@@ -52,6 +55,7 @@ import 'firebase/auth';
         const text = `合計${targetImages.length}枚の写真をダウンロードします`;
       },
       showFullImage: function (image) {
+        this.loading = true;
         const storage = firebase.storage();
         var ref = storage.ref(image.path);
         ref.getDownloadURL().then(url => {
@@ -61,6 +65,7 @@ import 'firebase/auth';
                         <img src="${url}">
                     </p>`
          );
+        this.loading = false;
         });
       },
     },
@@ -163,6 +168,63 @@ import 'firebase/auth';
   position: fixed;
   bottom: 1em;
   left: 50%;
+}
+
+#loading-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 10, 10, 0.86);
+}
+
+.display-none {
+  display: none;
+}
+
+.loader,
+.loader:after {
+  border-radius: 50%;
+  width: 15em;
+  height: 15em;
+}
+.loader {
+  /* margin: 60px auto; */
+  top: 50%;
+  left: 50%;
+  font-size: 10px;
+  position: fix;
+  text-indent: -9999em;
+  border-top: 1.1em solid rgba(255, 255, 255, 0.2);
+  border-right: 1.1em solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
+  border-left: 1.1em solid #ffffff;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation: load8 1.1s infinite linear;
+  animation: load8 1.1s infinite linear;
+}
+@-webkit-keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
 }
 
 </style>
