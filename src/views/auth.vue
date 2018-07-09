@@ -6,13 +6,19 @@
          <div v-bind:key="image.src" class="image-container">
            <div style="position: relative">
           <img v-bind:src="image.src"/>
-          <span class="image-header">
-           <i class="mdi mdi-star-outline"></i>
+          <span class="image-header" v-on:click="handleStar(image)">
+           <i class="mdi yellow-star"
+              v-bind:class="{
+                'mdi-star-outline': !image.stared,
+                'mdi-star': image.stared,
+              }"
+           ></i>
           </span>
           </div>
         </div>
        </template>
        </div>
+       <a id="download-button" class="button is-primary is-rounded">ダウンロード</a>
     </div>
 </template>
 
@@ -25,7 +31,26 @@ import 'firebase/auth';
     data: function () { return {
       title: 'hello',
       images: [],
+      stared: [],
     };
+    },
+    computed: {
+      isStaredClass: function(image) {
+          return {
+            'mdi-star-outline': !image.stared,
+            'mdi-star': image.stared,
+          }
+        },
+    },
+    methods: {
+      handleStar: function (image) {
+        console.log('star is clicked. %o', image)
+        image.stared = !image.stared;
+      },
+      downloadFiles: function () {
+        const targetImages = this.images.filter(image => image.stared);
+        const text = `合計${targetImages.length}枚の写真をダウンロードします`;
+      },
     },
     components: {
       // LoginForm,
@@ -76,8 +101,12 @@ import 'firebase/auth';
         var ref = storage.ref(thumbPath);
         ref.getDownloadURL().then(url => {
         console.log('url is ' + url);
+
         this.images.push({
           src: url,
+          stared: false,
+          path: path,
+          thumbPath: thumbPath,
         });
       });
     });
@@ -112,6 +141,16 @@ import 'firebase/auth';
   width: 100%;
   top: 0px;
   left: 0px;
+}
+
+.yellow-star {
+  color: #CCFF88;
+}
+
+#download-button {
+  position: fixed;
+  bottom: 1em;
+  left: 50%;
 }
 
 </style>
