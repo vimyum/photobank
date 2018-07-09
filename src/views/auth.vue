@@ -5,7 +5,7 @@
        <template v-for="image in images">
          <div v-bind:key="image.src" class="image-container">
            <div style="position: relative">
-          <img v-bind:src="image.src"/>
+          <img v-bind:src="image.src" v-on:click="showFullImage(image)"/>
           <span class="image-header" v-on:click="handleStar(image)">
            <i class="mdi yellow-star"
               v-bind:class="{
@@ -50,6 +50,18 @@ import 'firebase/auth';
       downloadFiles: function () {
         const targetImages = this.images.filter(image => image.stared);
         const text = `合計${targetImages.length}枚の写真をダウンロードします`;
+      },
+      showFullImage: function (image) {
+        const storage = firebase.storage();
+        var ref = storage.ref(image.path);
+        ref.getDownloadURL().then(url => {
+        console.log('url is ' + url);
+        this.$modal.open(
+                    `<p class="image">
+                        <img src="${url}">
+                    </p>`
+         );
+        });
       },
     },
     components: {
