@@ -1,6 +1,16 @@
 <template>
     <div>
        <h1>auth.vue--> {{title}}</h1>
+       <section>
+        <b-modal :active.sync="isComponentModalActive">
+          <div class="download-modal">
+            <h1>写真をまとめてダウンロード</h1>
+            <p>合計{{confirmMessage}}の写真をダウンロードします</p>
+            <a class="button is-primary is-rounded" v-on:click="closeModal">Cancel</a>
+            <a class="button is-primary is-rounded" v-on:click="closeModal">OK</a>
+          </div>
+        </b-modal>
+        </section>
        <div class="container">
        <template v-for="image in images">
          <div v-bind:key="image.src" class="image-container">
@@ -18,7 +28,10 @@
         </div>
        </template>
        </div>
-       <a id="download-button" class="button is-primary is-rounded">ダウンロード</a>
+       <div id="download-button" >
+       <a class="button is-primary is-rounded"
+       v-on:click="downloadFiles">まとめてダウンロード</a>
+       </div>
     <div id="loading-background" v-bind:class="{
       'display-none': !this.loading,
     }"><div class="loader">Loadking...</div></div>
@@ -29,12 +42,29 @@
 import firebase from 'firebase';
 import 'firebase/auth';
 
+const MyConfirmMordal = {
+        props: [],
+        template: `<form action=""><div class="modal-card" style="width: 320px">
+                    <section class="modal-card-body">
+                    HOGE.. 
+                    </section>
+                    <footer class="modal-card-foot">
+                        <button class="button" type="button" >Cancel</button>
+                        <button class="button" type="button" >OK</button>
+                    </footer>
+                </div></form>`,
+}
+
   export default {
+    components: {
+      'my-confirm-modal': MyConfirmMordal,
+    },
     name: 'login-view',
     data: function () { return {
       title: 'hello',
       images: [],
       loading: false,
+      isComponentModalActive: true,
     };
     },
     computed: {
@@ -44,6 +74,9 @@ import 'firebase/auth';
             'mdi-star': image.stared,
           }
         },
+      confirmMessage: function() {
+        return this.images.filter(e => e.stared).length;
+      }
     },
     methods: {
       handleStar: function (image) {
@@ -51,8 +84,7 @@ import 'firebase/auth';
         image.stared = !image.stared;
       },
       downloadFiles: function () {
-        const targetImages = this.images.filter(image => image.stared);
-        const text = `合計${targetImages.length}枚の写真をダウンロードします`;
+        this.isComponentModalActive = true;
       },
       showFullImage: function (image) {
         this.loading = true;
@@ -68,9 +100,9 @@ import 'firebase/auth';
         this.loading = false;
         });
       },
-    },
-    components: {
-      // LoginForm,
+      closeModal: function () {
+        this.isComponentModalActive = false;
+      },
     },
     created: function() {
       console.log('AuthView is mounted.');
@@ -93,6 +125,7 @@ import 'firebase/auth';
         })
       }
 
+    return;
       if(q.mode == 'dlogin') { // only for local development.
       if (!user) {
         firebase.auth().signInWithEmailAndPassword(q.mail, q.pass).then(result => {
@@ -102,6 +135,7 @@ import 'firebase/auth';
         });
       }
     }
+
 
     var database = firebase.database();
     firebase.database().ref('/images/').once('value').then((snapshot) => {
@@ -166,8 +200,17 @@ import 'firebase/auth';
 
 #download-button {
   position: fixed;
-  bottom: 1em;
-  left: 50%;
+  bottom: 4em;
+  font-size: 1.5em;
+  width: 100%;
+  text-align: center;
+}
+
+.download-modal {
+  height: 240px;
+   border-radius: 10px;
+   -webkit-border-radius: 10px;
+   background-color: #ffffff;
 }
 
 #loading-background {
