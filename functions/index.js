@@ -7,24 +7,13 @@ const fs = require('fs');
 
 const admin = require('firebase-admin');
 admin.initializeApp();
-// [END import]
 
-// [START generateThumbnail]
-/**
- * When an image is uploaded in the Storage bucket We generate a thumbnail automatically using
- * ImageMagick.
- */
-// [START generateThumbnailTrigger]
 exports.generateThumbnail = functions.storage.object().onFinalize((object) => {
-// [END generateThumbnailTrigger]
-  // [START eventAttributes]
   const fileBucket = object.bucket; // The Storage bucket that contains the file.
   const filePath = object.name; // File path in the bucket.
   const contentType = object.contentType; // File content type.
   const metageneration = object.metageneration; // Number of times metadata has been generated. New objects have a value of 1.
-  // [END eventAttributes]
 
-  // [START stopConditions]
   // Exit if this is triggered on a file that is not an image.
   if (!contentType.startsWith('image/')) {
     console.log('This is not an image.');
@@ -38,9 +27,7 @@ exports.generateThumbnail = functions.storage.object().onFinalize((object) => {
     console.log('Already a Thumbnail.');
     return null;
   }
-  // [END stopConditions]
 
-  // [START thumbnailGeneration]
   // Download file from bucket.
   const bucket = gcs.bucket(fileBucket);
   const tempFilePath = path.join(os.tmpdir(), fileName);
@@ -78,5 +65,26 @@ exports.generateThumbnail = functions.storage.object().onFinalize((object) => {
           return res.redirect(303, snapshot.ref.toString());
       });
   });
-  // [END thumbnailGeneration]
+});
+
+exports.bulkDownload = functions.https.onCall((data, context) => {
+  const fileNames = ['thumb_IMG_8877.jpg', 'thumb_IMG_8899.jpg', 'thumb_IMG_9061.jpg'];
+  const tempFilePaths = fileNames.map(fname => path.join(os.tmpdir(), fname));
+
+  const bucket = gcs.bucket('taiyo-c3f03.appspot.com');
+  const files = fileNames.map(fname => bucket.file(fname));
+
+  return Promise.all(files.map((file, idx) => file.download({destination: tempFilePaths[idx]})))
+  .then(result => {
+    console.info('Image downloaded locally to %o', result);
+    tempFilePaths.forEach(tempFilePath => fs.unlinkSync(tempFilePath));
+    return {
+      message: tempFilePaths,
+    }
+  }).catch(error => {
+      console.error(`error is occured in function. ${error.message}.`);
+    return {
+      message: `error is occured in function. ${error.message}.`,
+    }
+  });
 });

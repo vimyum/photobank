@@ -7,7 +7,7 @@
             <h1>写真をまとめてダウンロード</h1>
             <p>合計{{confirmMessage}}の写真をダウンロードします</p>
             <a class="button is-primary is-rounded" v-on:click="closeModal">Cancel</a>
-            <a class="button is-primary is-rounded" v-on:click="closeModal">OK</a>
+            <a class="button is-primary is-rounded" v-on:click="bulkDownload">OK</a>
           </div>
         </b-modal>
         </section>
@@ -41,6 +41,7 @@
 <script>
 import firebase from 'firebase';
 import 'firebase/auth';
+import 'firebase/functions';
 
 const MyConfirmMordal = {
         props: [],
@@ -103,6 +104,15 @@ const MyConfirmMordal = {
       closeModal: function () {
         this.isComponentModalActive = false;
       },
+      bulkDownload: function () {
+        console.log('bulkDownload is called.');
+        const bulkDownloadFunction = firebase.functions().httpsCallable('bulkDownload');
+        bulkDownloadFunction({text: 'sample message'}).then((result) => {
+          console.log(`result of cloud function: %o`, result);
+        }).catch( error => {
+          console.log('catch the error: %o', error);
+        });
+      },
     },
     created: function() {
       console.log('AuthView is mounted.');
@@ -125,7 +135,6 @@ const MyConfirmMordal = {
         })
       }
 
-    return;
       if(q.mode == 'dlogin') { // only for local development.
       if (!user) {
         firebase.auth().signInWithEmailAndPassword(q.mail, q.pass).then(result => {
@@ -136,6 +145,7 @@ const MyConfirmMordal = {
       }
     }
 
+    return;
 
     var database = firebase.database();
     firebase.database().ref('/images/').once('value').then((snapshot) => {

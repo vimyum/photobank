@@ -9,10 +9,11 @@
     "logs": "firebase functions:log"
   },
   "dependencies": {
-    "firebase-admin": "~5.12.1",
-    "firebase-functions": "^1.0.3",
     "@google-cloud/storage": "^0.4.0",
-    "child-process-promise": "^2.2.0"
+    "archiver": "^2.1.1",
+    "child-process-promise": "^2.2.0",
+    "firebase-admin": "~5.12.1",
+    "firebase-functions": "^1.0.3"
   },
   "private": true
 }
