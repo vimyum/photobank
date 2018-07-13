@@ -4,6 +4,7 @@ const spawn = require('child-process-promise').spawn;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const archiver = require('archiver');
 
 const admin = require('firebase-admin');
 admin.initializeApp();
@@ -68,6 +69,9 @@ exports.generateThumbnail = functions.storage.object().onFinalize((object) => {
 });
 
 exports.bulkDownload = functions.https.onCall((data, context) => {
+  const outputPath = path.join(os.tmpdir(), 'output.zip');
+  const output = fs.createWriteStream(outputPath);
+  const archive = archiver('zip');
   const fileNames = ['thumb_IMG_8877.jpg', 'thumb_IMG_8899.jpg', 'thumb_IMG_9061.jpg'];
   const tempFilePaths = fileNames.map(fname => path.join(os.tmpdir(), fname));
 
@@ -77,11 +81,27 @@ exports.bulkDownload = functions.https.onCall((data, context) => {
   return Promise.all(files.map((file, idx) => file.download({destination: tempFilePaths[idx]})))
   .then(result => {
     console.info('Image downloaded locally to %o', result);
+
+    archive.pipe(output);
+    tempFilePaths.forEach((tempFilePath, idx) => {
+      archive.file(tempFilePath, {name: fileNames[idx]});
+    })
+    archive.finalize();
+
+    return bucket.upload(outputPath, {
+      destination: `output_${new Date().getTime()}.zip`,
+      metadata: {
+        contentType: 'application/zip',
+      },
+    });
+  }).then( result => {
     tempFilePaths.forEach(tempFilePath => fs.unlinkSync(tempFilePath));
+    fs.unlinkSync(outputPath);
     return {
       message: tempFilePaths,
     }
-  }).catch(error => {
+  })
+  .catch(error => {
       console.error(`error is occured in function. ${error.message}.`);
     return {
       message: `error is occured in function. ${error.message}.`,
