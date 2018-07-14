@@ -86,15 +86,22 @@ exports.bulkDownload = functions.https.onCall((data, context) => {
     tempFilePaths.forEach((tempFilePath, idx) => {
       archive.file(tempFilePath, {name: fileNames[idx]});
     })
-    archive.finalize();
 
-    return bucket.upload(outputPath, {
-      destination: `output_${new Date().getTime()}.zip`,
-      metadata: {
-        contentType: 'application/zip',
-      },
+    return new Promise(resolve => {
+
+      output.on('finish', function() {
+        console.info('output.finish is called.');
+        resolve(bucket.upload(outputPath, {
+          destination: `output_${new Date().getTime()}.zip`,
+          metadata: {
+            contentType: 'application/zip',
+          },
+        }));
+      });
+      console.info('call archive.finalize() 2');
+      archive.finalize();
     });
-  }).then( result => {
+  }).then(() => {
     tempFilePaths.forEach(tempFilePath => fs.unlinkSync(tempFilePath));
     fs.unlinkSync(outputPath);
     return {
